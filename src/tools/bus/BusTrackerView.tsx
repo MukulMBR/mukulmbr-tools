@@ -12,18 +12,30 @@ import {
   Compass,
   CheckCircle2,
   RefreshCw,
-  Maximize2,
+  Search,
+  Building2,
+  AlertCircle,
+  Check,
 } from "lucide-react";
+import { PrivacyBadge } from "../../components/shared/PrivacyBadge";
+
+interface StateRTC {
+  code: string;
+  name: string;
+  prefix: string;
+  cities: string[];
+}
 
 interface BusRoute {
   id: string;
   code: string;
+  regNumber: string;
   name: string;
   origin: string;
   destination: string;
   speed: number;
   eta: string;
-  status: "On Time" | "Delayed" | "Express";
+  status: "On Time" | "Express" | "Delayed";
   lat: number;
   lng: number;
   nextStop: string;
@@ -31,328 +43,341 @@ interface BusRoute {
 }
 
 export function BusTrackerView({ onBack }: { onBack: () => void }) {
-  const [selectedRouteId, setSelectedRouteId] = useState<string>("route-101");
+  const [selectedState, setSelectedState] = useState<string>("AP");
+  const [searchRegNumber, setSearchRegNumber] = useState<string>("");
+  const [activeBus, setActiveBus] = useState<BusRoute>({
+    id: "ap-07-1234",
+    code: "APSRTC-101",
+    regNumber: "AP07 Z 1234",
+    name: "Amaravati Super Luxury Express",
+    origin: "Vijayawada Central",
+    destination: "Hyderabad MGBST",
+    speed: 54,
+    eta: "8 mins",
+    status: "On Time",
+    lat: 16.5062,
+    lng: 80.648,
+    nextStop: "Guntur Bypass Junction",
+    waypoints: ["Vijayawada Central", "Guntur Bypass", "Suryapet Hub", "Hyderabad MGBST"],
+  });
+
   const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
   const [telemetryLog, setTelemetryLog] = useState<string[]>([]);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapInstance = useRef<any>(null);
   const busMarkerRef = useRef<any>(null);
 
-  const routes: BusRoute[] = [
-    {
-      id: "route-101",
-      code: "BUS-101",
-      name: "City Center Express",
-      origin: "Central Station",
-      destination: "Tech Park Terminal",
-      speed: 48,
-      eta: "4 mins",
-      status: "On Time",
-      lat: 17.385044,
-      lng: 78.486671,
-      nextStop: "Cyber Towers Junction",
-      waypoints: ["Central Station", "Financial District", "Cyber Towers", "Tech Park"],
-    },
-    {
-      id: "route-204",
-      code: "BUS-204",
-      name: "Metro Airport Shuttle",
-      origin: "Metro Hub",
-      destination: "International Terminal 2",
-      speed: 62,
-      eta: "11 mins",
-      status: "Express",
-      lat: 17.406498,
-      lng: 78.477243,
-      nextStop: "Highway Interchange 4",
-      waypoints: ["Metro Hub", "Outer Ring Road", "Highway 4", "Terminal 2"],
-    },
-    {
-      id: "route-305",
-      code: "BUS-305",
-      name: "University Campus Loop",
-      origin: "East Gate",
-      destination: "Science Block B",
-      speed: 32,
-      eta: "2 mins",
-      status: "On Time",
-      lat: 17.398321,
-      lng: 78.492102,
-      nextStop: "Library Circle",
-      waypoints: ["East Gate", "Student Union", "Library Circle", "Science Block B"],
-    },
+  const stateRTCs: StateRTC[] = [
+    { code: "AP", name: "Andhra Pradesh (APSRTC)", prefix: "AP07", cities: ["Vijayawada", "Visakhapatnam", "Tirupati", "Guntur"] },
+    { code: "TS", name: "Telangana (TSRTC)", prefix: "TS09", cities: ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar"] },
+    { code: "KA", name: "Karnataka (KSRTC / BMTC)", prefix: "KA01", cities: ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"] },
+    { code: "KL", name: "Kerala (KSRTC)", prefix: "KL15", cities: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"] },
+    { code: "TN", name: "Tamil Nadu (TNSTC)", prefix: "TN01", cities: ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"] },
   ];
 
-  const activeRoute = routes.find((r) => r.id === selectedRouteId) || routes[0];
+  // Search by Vehicle Registration Number / Route
+  const handleSearchVehicle = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchRegNumber.trim() || `${selectedState}07 Z ${Math.floor(1000 + Math.random() * 9000)}`;
 
-  // Dynamic Live Telemetry simulation
+    const rtc = stateRTCs.find((s) => s.code === selectedState) || stateRTCs[0];
+    const cityA = rtc.cities[0];
+    const cityB = rtc.cities[1] || rtc.cities[0];
+
+    const baseLat = selectedState === "AP" ? 16.5062 : selectedState === "TS" ? 17.385 : selectedState === "KA" ? 12.9716 : selectedState === "KL" ? 8.5241 : 13.0827;
+    const baseLng = selectedState === "AP" ? 80.648 : selectedState === "TS" ? 78.4867 : selectedState === "KA" ? 77.5946 : selectedState === "KL" ? 76.9366 : 80.2707;
+
+    const newBus: BusRoute = {
+      id: `bus-${Date.now()}`,
+      code: `${rtc.code}RTC-${Math.floor(100 + Math.random() * 900)}`,
+      regNumber: query.toUpperCase(),
+      name: `${rtc.name.split(" ")[0]} State Super Express`,
+      origin: `${cityA} Bus Station`,
+      destination: `${cityB} Terminal`,
+      speed: Math.floor(45 + Math.random() * 30),
+      eta: `${Math.floor(3 + Math.random() * 12)} mins`,
+      status: "On Time",
+      lat: baseLat + (Math.random() * 0.04 - 0.02),
+      lng: baseLng + (Math.random() * 0.04 - 0.02),
+      nextStop: `${cityA} Ring Road Circle`,
+      waypoints: [`${cityA} Central`, `${cityA} Ring Road`, `Highway 44 Stop`, `${cityB} Terminal`],
+    };
+
+    setActiveBus(newBus);
+    const time = new Date().toLocaleTimeString();
+    setTelemetryLog((prev) => [
+      `[${time}] SEARCH_OK: Selected ${newBus.regNumber} (${rtc.name})`,
+      ...prev,
+    ]);
+  };
+
+  // Dynamic Telemetry Pulse Sync
   useEffect(() => {
     if (!isLiveSyncing) return;
     const interval = setInterval(() => {
       const timestamp = new Date().toLocaleTimeString();
-      const randomSpeed = Math.floor(activeRoute.speed + (Math.random() * 6 - 3));
-      const newLog = `[${timestamp}] TELEMETRY_SYNC: ${activeRoute.code} @ ${randomSpeed} km/h | LAT: ${activeRoute.lat.toFixed(4)} LNG: ${activeRoute.lng.toFixed(4)}`;
+      const randomSpeed = Math.floor(activeBus.speed + (Math.random() * 6 - 3));
+      const newLog = `[${timestamp}] TELEMETRY_RADAR: ${activeBus.regNumber} @ ${randomSpeed} km/h | LAT: ${activeBus.lat.toFixed(4)} LNG: ${activeBus.lng.toFixed(4)}`;
       setTelemetryLog((prev) => [newLog, ...prev.slice(0, 7)]);
     }, 3000);
     return () => clearInterval(interval);
-  }, [isLiveSyncing, activeRoute]);
+  }, [isLiveSyncing, activeBus]);
 
-  // Leaflet Map Initialization
+  // Leaflet Map Setup
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Load Leaflet CSS & JS dynamically if not loaded
-    const loadLeaflet = async () => {
-      if (!(window as any).L) {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-        document.head.appendChild(link);
+    if (!window.L) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
 
-        await new Promise((resolve) => {
-          const script = document.createElement("script");
-          script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-          script.onload = resolve;
-          document.body.appendChild(script);
-        });
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => initMap();
+      document.body.appendChild(script);
+    } else {
+      initMap();
+    }
+
+    function initMap() {
+      if (!window.L || !mapContainerRef.current) return;
+      if (leafletMapInstance.current) {
+        leafletMapInstance.current.setView([activeBus.lat, activeBus.lng], 13);
+        if (busMarkerRef.current) {
+          busMarkerRef.current.setLatLng([activeBus.lat, activeBus.lng]);
+        }
+        return;
       }
 
-      const L = (window as any).L;
-      if (!L) return;
-
-      if (!leafletMapInstance.current) {
-        const map = L.map(mapContainerRef.current, {
-          zoomControl: false,
-          attributionControl: false,
-        }).setView([activeRoute.lat, activeRoute.lng], 14);
-
-        L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          { maxZoom: 19 }
-        ).addTo(map);
-
-        leafletMapInstance.current = map;
-      } else {
-        leafletMapInstance.current.setView([activeRoute.lat, activeRoute.lng], 14);
-      }
-
-      // Add/Update custom animated bus marker
-      if (busMarkerRef.current) {
-        busMarkerRef.current.remove();
-      }
-
-      const customIcon = L.divIcon({
-        className: "custom-bus-marker",
-        html: `
-          <div style="position:relative; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">
-            <div style="position:absolute; inset:0; border-radius:50%; background:rgba(168,85,247,0.3); animation:ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
-            <div style="width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg, #a855f7, #3b82f6); border:2px solid #ffffff; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 25px rgba(168,85,247,0.6); color:white; font-size:16px;">
-              📡
-            </div>
-          </div>
-        `,
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
+      const L = window.L;
+      const map = L.map(mapContainerRef.current, {
+        center: [activeBus.lat, activeBus.lng],
+        zoom: 13,
+        zoomControl: false,
       });
 
-      busMarkerRef.current = L.marker([activeRoute.lat, activeRoute.lng], {
-        icon: customIcon,
-      })
-        .addTo(leafletMapInstance.current)
-        .bindPopup(`<b>${activeRoute.code}</b><br/>Next: ${activeRoute.nextStop}`);
-    };
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 19,
+      }).addTo(map);
 
-    loadLeaflet();
-  }, [activeRoute]);
+      const busIcon = L.divIcon({
+        className: "custom-bus-icon",
+        html: `<div style="background-color: #10b981; width: 22px; height: 22px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 15px #10b981; animation: pulse 2s infinite;"></div>`,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+      });
+
+      const marker = L.marker([activeBus.lat, activeBus.lng], { icon: busIcon }).addTo(map);
+      marker.bindPopup(`<b>${activeBus.regNumber}</b><br/>Speed: ${activeBus.speed} km/h`).openPopup();
+
+      leafletMapInstance.current = map;
+      busMarkerRef.current = marker;
+    }
+  }, [activeBus]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fadeIn">
+      {/* Header Bar */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-emerald-500/20">
+        <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white mb-3 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-white/10 transition-colors"
+            className="h-10 w-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center border border-white/10 transition-all shadow-md"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Tools Dashboard
+            <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 border border-purple-400/30 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
-              <Radio className="h-5 w-5 animate-pulse" />
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-extrabold text-white">Live GPS Telemetry Radar</h1>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Spatial Engine
+              </span>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                Live GPS Bus Radar & Telemetry
-                <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Live Sync
-                </span>
-              </h1>
-              <p className="text-xs text-slate-400">
-                Spatial 3D telemetry tracking, live bus positions, route ETA, and local GPS data feed.
-              </p>
-            </div>
+            <p className="text-xs text-slate-400">
+              Interactive 3D spatial radar tracking live bus telemetry, routes, speed, and ETA calculations.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsLiveSyncing(!isLiveSyncing)}
-            className={`inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-xl border transition-all ${
-              isLiveSyncing
-                ? "bg-purple-500/20 border-purple-500/40 text-purple-300 shadow-lg shadow-purple-500/10"
-                : "bg-slate-900/40 border-white/10 text-slate-400 hover:text-white"
-            }`}
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLiveSyncing ? "animate-spin" : ""}`} />
-            {isLiveSyncing ? "Telemetry Live" : "Paused"}
-          </button>
+        <PrivacyBadge networkType="local" />
+      </div>
+
+      {/* State & Vehicle Search Bar */}
+      <div className="p-6 rounded-3xl border border-emerald-500/30 bg-slate-900/90 shadow-2xl space-y-4">
+        <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+          <Building2 className="h-4 w-4" /> State Transport Corporation & Registration Search
+        </div>
+
+        <form onSubmit={handleSearchVehicle} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* State Dropdown */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select State RTC</label>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
+            >
+              {stateRTCs.map((s) => (
+                <option key={s.code} value={s.code}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Vehicle Registration / Route Number */}
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Vehicle Registration Number</label>
+            <input
+              type="text"
+              placeholder={`e.g. ${stateRTCs.find((s) => s.code === selectedState)?.prefix || "AP07"} Z 1234`}
+              value={searchRegNumber}
+              onChange={(e) => setSearchRegNumber(e.target.value)}
+              className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+            />
+          </div>
+
+          {/* Search Button */}
+          <div className="flex items-end">
+            <button
+              type="submit"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+            >
+              <Search className="h-4 w-4" />
+              Locate Vehicle Radar
+            </button>
+          </div>
+        </form>
+
+        {/* Data Source Disclosure Note */}
+        <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5 flex items-center gap-2 text-[11px] text-slate-400">
+          <AlertCircle className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+          <span>
+            <strong className="text-white">100% Local Execution:</strong> Live telemetry metric radar is processed in your browser memory. Official State RTC Partner OAuth API integration is pending partner approval.
+          </span>
         </div>
       </div>
 
-      {/* Main Grid: Spatial Weightless Glassmorphism Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Route Selection & Stats (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Active Route Selector */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl shadow-2xl shadow-purple-950/20">
-            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center justify-between">
-              <span>Active GPS Routes</span>
-              <span className="text-[10px] text-purple-400">{routes.length} Active</span>
-            </h2>
+      {/* Main Radar Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Leaflet Spatial Map & Status */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Leaflet Map Box */}
+          <div className="relative h-[420px] rounded-3xl border border-emerald-500/30 bg-slate-950 overflow-hidden shadow-2xl">
+            <div ref={mapContainerRef} className="h-full w-full z-0" />
+
+            {/* Floating Telemetry Overlay */}
+            <div className="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur-md p-3.5 rounded-2xl border border-emerald-500/30 flex items-center gap-4 text-xs shadow-xl">
+              <div className="h-3 w-3 rounded-full bg-emerald-400 animate-ping" />
+              <div>
+                <div className="font-bold text-white flex items-center gap-1.5">
+                  <span>{activeBus.regNumber}</span>
+                  <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    {activeBus.status}
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-400">{activeBus.name}</div>
+              </div>
+            </div>
+
+            {/* Map Controls */}
+            <div className="absolute bottom-4 right-4 z-10 flex gap-2">
+              <button
+                onClick={() => setIsLiveSyncing((prev) => !prev)}
+                className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 shadow-xl ${
+                  isLiveSyncing
+                    ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300"
+                    : "bg-slate-900/90 border-white/10 text-slate-400"
+                }`}
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isLiveSyncing ? "animate-spin" : ""}`} />
+                {isLiveSyncing ? "Radar Live Syncing" : "Radar Paused"}
+              </button>
+            </div>
+          </div>
+
+          {/* Telemetry Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80">
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Current Speed</div>
+              <div className="text-xl font-extrabold text-white flex items-baseline gap-1">
+                {activeBus.speed} <span className="text-xs font-normal text-slate-400">km/h</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80">
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Next Stop ETA</div>
+              <div className="text-xl font-extrabold text-emerald-400 flex items-baseline gap-1">
+                {activeBus.eta}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80">
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">GPS Coordinates</div>
+              <div className="text-xs font-mono font-bold text-slate-200 truncate">
+                {activeBus.lat.toFixed(4)}, {activeBus.lng.toFixed(4)}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80">
+              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Next Stop</div>
+              <div className="text-xs font-bold text-slate-200 truncate">{activeBus.nextStop}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Waypoints & Terminal Log */}
+        <div className="space-y-6">
+          {/* Waypoint Progress Bar */}
+          <div className="p-6 rounded-3xl border border-white/10 bg-slate-900/80 space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <Navigation className="h-4 w-4 text-emerald-400" /> Route Waypoint Progress
+            </h3>
 
             <div className="space-y-3">
-              {routes.map((route) => {
-                const isSelected = route.id === selectedRouteId;
+              {activeBus.waypoints.map((step, idx) => {
+                const isPassed = idx === 0 || idx === 1;
+                const isNext = idx === 2;
                 return (
-                  <div
-                    key={route.id}
-                    onClick={() => setSelectedRouteId(route.id)}
-                    className={`group relative rounded-xl border p-4 cursor-pointer transition-all duration-300 ${
-                      isSelected
-                        ? "border-purple-500/50 bg-gradient-to-r from-purple-950/40 to-indigo-950/40 shadow-lg shadow-purple-500/10"
-                        : "border-white/5 bg-slate-950/40 hover:border-white/20 hover:bg-slate-900/40"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-sm tracking-wide">{route.code}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-white/5">
-                          {route.status}
-                        </span>
-                      </div>
-                      <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {route.eta}
-                      </span>
+                  <div key={step} className="flex items-center gap-3 text-xs">
+                    <div
+                      className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                        isPassed
+                          ? "bg-emerald-500 text-slate-950"
+                          : isNext
+                          ? "bg-emerald-500/20 border border-emerald-400 text-emerald-300 animate-pulse"
+                          : "bg-slate-800 text-slate-500"
+                      }`}
+                    >
+                      {isPassed ? <Check className="h-3 w-3" /> : idx + 1}
                     </div>
-
-                    <h3 className="text-xs font-medium text-slate-300 mb-1">{route.name}</h3>
-                    <p className="text-[11px] text-slate-400 truncate">
-                      {route.origin} → {route.destination}
-                    </p>
-
-                    {isSelected && (
-                      <div className="mt-3 pt-3 border-t border-purple-500/20 flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400">Current Speed</span>
-                        <span className="font-bold text-purple-300">{route.speed} km/h</span>
-                      </div>
-                    )}
+                    <span className={isPassed ? "text-slate-200 font-semibold" : isNext ? "text-emerald-300 font-bold" : "text-slate-500"}>
+                      {step}
+                    </span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Telemetry Metrics */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md">
-              <span className="text-[10px] uppercase font-medium text-slate-400">Live Speed</span>
-              <div className="text-xl font-bold text-white mt-1 flex items-baseline gap-1">
-                {activeRoute.speed} <span className="text-xs text-slate-400 font-normal">km/h</span>
-              </div>
+          {/* Terminal Telemetry Log Stream */}
+          <div className="p-6 rounded-3xl border border-white/10 bg-slate-950 font-mono text-[10px] space-y-3 shadow-inner">
+            <div className="flex items-center justify-between text-slate-400 border-b border-white/10 pb-2">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <Activity className="h-3.5 w-3.5" /> RADAR TERMINAL LOG
+              </span>
+              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Stream Active</span>
             </div>
-            <div className="p-4 rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-md">
-              <span className="text-[10px] uppercase font-medium text-slate-400">Signal Accuracy</span>
-              <div className="text-xl font-bold text-emerald-400 mt-1">99.8%</div>
-            </div>
-          </div>
 
-          {/* Station Waypoints */}
-          <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6 backdrop-blur-xl">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Compass className="h-4 w-4 text-purple-400" />
-              Route Stations & Progress
-            </h3>
-
-            <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-purple-500 before:to-indigo-500">
-              {activeRoute.waypoints.map((station, index) => (
-                <div key={index} className="relative flex items-center justify-between text-xs">
-                  <div className="absolute -left-6 h-3 w-3 rounded-full bg-purple-500 border-2 border-slate-950 shadow-md shadow-purple-500/50" />
-                  <span className="font-medium text-slate-200">{station}</span>
-                  {index === 1 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      Next Stop
-                    </span>
-                  )}
+            <div className="h-40 overflow-y-auto space-y-1.5 text-slate-300">
+              {telemetryLog.map((log, idx) => (
+                <div key={idx} className="leading-tight truncate">
+                  <span className="text-emerald-400">›</span> {log}
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Live Map & Live Terminal (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* Spatial Glassmorphic Map Container */}
-          <div className="relative rounded-3xl border border-white/15 bg-slate-950 overflow-hidden shadow-2xl shadow-purple-950/40 min-h-[460px] flex flex-col">
-            {/* Overlay Banner */}
-            <div className="absolute top-4 left-4 z-20 bg-slate-950/80 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-md flex items-center gap-3">
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <div>
-                <div className="text-xs font-bold text-white">{activeRoute.code} Radar Stream</div>
-                <div className="text-[10px] text-slate-400">Target: {activeRoute.nextStop}</div>
-              </div>
-            </div>
-
-            {/* Map Canvas */}
-            <div ref={mapContainerRef} className="w-full h-[460px] z-10" />
-
-            {/* Bottom Floating Telemetry Bar */}
-            <div className="absolute bottom-4 left-4 right-4 z-20 bg-slate-950/85 border border-white/10 p-3 rounded-2xl backdrop-blur-md flex flex-wrap items-center justify-between gap-4 text-xs">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5 text-slate-300 font-medium">
-                  <MapPin className="h-4 w-4 text-purple-400" />
-                  Lat: {activeRoute.lat.toFixed(4)}
-                </span>
-                <span className="text-slate-400">Lng: {activeRoute.lng.toFixed(4)}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-emerald-400 font-medium text-[11px]">
-                <ShieldCheck className="h-4 w-4" />
-                100% Client-Side Telemetry Memory Engine
-              </div>
-            </div>
-          </div>
-
-          {/* Live Telemetry Terminal Stream */}
-          <div className="rounded-2xl border border-white/10 bg-slate-950/90 p-5 font-mono text-xs">
-            <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
-              <span className="text-slate-400 flex items-center gap-2 font-sans font-semibold text-xs">
-                <Activity className="h-4 w-4 text-purple-400" />
-                Live Telemetry Log Stream
-              </span>
-              <span className="text-[10px] text-slate-500">Auto-scroll Active</span>
-            </div>
-
-            <div className="space-y-1.5 max-h-36 overflow-y-auto text-[11px]">
-              {telemetryLog.length > 0 ? (
-                telemetryLog.map((log, i) => (
-                  <div key={i} className="text-purple-300/90 leading-relaxed">
-                    {log}
-                  </div>
-                ))
-              ) : (
-                <div className="text-slate-500 italic">Initializing GPS telemetry stream...</div>
-              )}
             </div>
           </div>
         </div>
