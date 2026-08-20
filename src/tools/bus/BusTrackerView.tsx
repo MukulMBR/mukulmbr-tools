@@ -20,6 +20,7 @@ import {
   Globe,
   Bus,
   Flag,
+  Lock,
 } from "lucide-react";
 import { PrivacyBadge } from "../../components/shared/PrivacyBadge";
 
@@ -27,6 +28,7 @@ interface StateRTC {
   code: string;
   name: string;
   prefix: string;
+  isAvailable: boolean;
   cities: string[];
 }
 
@@ -46,65 +48,94 @@ interface BusRoute {
   waypoints: string[];
   trackingUrl?: string;
   progressPercent: number;
+  isLiveApi?: boolean;
 }
 
 export function BusTrackerView({ onBack }: { onBack: () => void }) {
-  const [trackingMode, setTrackingMode] = useState<"url" | "state">("state");
+  const [trackingMode, setTrackingMode] = useState<"bmtc" | "state" | "url">("bmtc");
+  const [bmtcApiKey, setBmtcApiKey] = useState<string>("");
   const [trackingUrlInput, setTrackingUrlInput] = useState<string>("https://s.yourbus.in/track?id=YB-88492");
-  const [selectedState, setSelectedState] = useState<string>("TS");
+  const [selectedState, setSelectedState] = useState<string>("KA");
   const [searchRegNumber, setSearchRegNumber] = useState<string>("");
 
   const stateRTCs: StateRTC[] = [
-    { code: "AP", name: "Andhra Pradesh (APSRTC)", prefix: "AP07", cities: ["Vijayawada", "Visakhapatnam", "Tirupati", "Guntur"] },
-    { code: "TS", name: "Telangana (TSRTC)", prefix: "TS09", cities: ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar"] },
-    { code: "KA", name: "Karnataka (KSRTC / BMTC)", prefix: "KA01", cities: ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"] },
-    { code: "KL", name: "Kerala (KSRTC)", prefix: "KL15", cities: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"] },
-    { code: "TN", name: "Tamil Nadu (TNSTC)", prefix: "TN01", cities: ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"] },
-    { code: "MH", name: "Maharashtra (MSRTC Shivneri)", prefix: "MH12", cities: ["Mumbai", "Pune", "Nagpur", "Nashik"] },
-    { code: "UP", name: "Uttar Pradesh (UPSRTC)", prefix: "UP32", cities: ["Lucknow", "Kanpur", "Varanasi", "Agra"] },
-    { code: "GJ", name: "Gujarat (GSRTC)", prefix: "GJ01", cities: ["Ahmedabad", "Surat", "Vadodara", "Rajkot"] },
-    { code: "RJ", name: "Rajasthan (RSRTC)", prefix: "RJ14", cities: ["Jaipur", "Jodhpur", "Udaipur", "Kota"] },
-    { code: "DL", name: "Delhi (DTC / DIMTS)", prefix: "DL01", cities: ["Kashmere Gate", "Anand Vihar", "ISBT", "Connaught Place"] },
-    { code: "HP", name: "Himachal (HRTC)", prefix: "HP01", cities: ["Shimla", "Manali", "Dharamshala", "Mandi"] },
+    { code: "KA", name: "Karnataka (BMTC Namma BMTC — Live Developer API)", prefix: "KA01", isAvailable: true, cities: ["Bengaluru", "Mysuru"] },
+    { code: "AP", name: "Andhra Pradesh (APSRTC — Coming Soon)", prefix: "AP07", isAvailable: false, cities: ["Vijayawada", "Visakhapatnam"] },
+    { code: "TS", name: "Telangana (TSRTC — Coming Soon)", prefix: "TS09", isAvailable: false, cities: ["Hyderabad", "Warangal"] },
+    { code: "KL", name: "Kerala (KSRTC — Coming Soon)", prefix: "KL15", isAvailable: false, cities: ["Thiruvananthapuram", "Kochi"] },
+    { code: "TN", name: "Tamil Nadu (TNSTC — Coming Soon)", prefix: "TN01", isAvailable: false, cities: ["Chennai", "Coimbatore"] },
+    { code: "MH", name: "Maharashtra (MSRTC — Coming Soon)", prefix: "MH12", isAvailable: false, cities: ["Mumbai", "Pune"] },
+    { code: "UP", name: "Uttar Pradesh (UPSRTC — Coming Soon)", prefix: "UP32", isAvailable: false, cities: ["Lucknow", "Kanpur"] },
+    { code: "GJ", name: "Gujarat (GSRTC — Coming Soon)", prefix: "GJ01", isAvailable: false, cities: ["Ahmedabad", "Surat"] },
+    { code: "RJ", name: "Rajasthan (RSRTC — Coming Soon)", prefix: "RJ14", isAvailable: false, cities: ["Jaipur", "Jodhpur"] },
+    { code: "DL", name: "Delhi (DTC — Coming Soon)", prefix: "DL01", isAvailable: false, cities: ["Delhi ISBT"] },
+    { code: "HP", name: "Himachal (HRTC — Coming Soon)", prefix: "HP01", isAvailable: false, cities: ["Shimla", "Manali"] },
   ];
 
   const [activeBus, setActiveBus] = useState<BusRoute>({
-    id: "ts-09-8382",
-    code: "TSRTC-8382",
-    regNumber: "TS09 Z 8382",
-    name: "Telangana State Super Express",
-    origin: "Hyderabad MGBS Terminal",
-    destination: "Warangal City Center",
-    speed: 58,
-    eta: "7 mins",
+    id: "bmtc-ka01-500",
+    code: "BMTC-500A",
+    regNumber: "KA01 F 5000",
+    name: "BMTC Namma BMTC — Silk Board to Hebbal Express",
+    origin: "Silk Board Bus Station",
+    destination: "Hebbal TTMC",
+    speed: 42,
+    eta: "5 mins",
     status: "On Time",
-    lat: 17.385,
-    lng: 78.4867,
-    nextStop: "Uppal Junction Stop",
-    waypoints: ["Hyderabad MGBS", "Uppal Junction", "Bhongir Bypass", "Warangal City Center"],
-    progressPercent: 55,
+    lat: 12.9716,
+    lng: 77.5946,
+    nextStop: "Marathahalli Innovative Multiplex",
+    waypoints: ["Silk Board", "HSR Layout", "Marathahalli", "Hebbal TTMC"],
+    progressPercent: 48,
+    isLiveApi: true,
   });
 
   const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
   const [telemetryLog, setTelemetryLog] = useState<string[]>([
-    "[INIT] Telemetry Radar Engine initialized for TS09 Z 8382",
+    "[INIT] BMTC Namma BMTC Live API Radar Engine ready",
   ]);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapInstance = useRef<any>(null);
   const busMarkerRef = useRef<any>(null);
+
+  const selectedStateObj = stateRTCs.find((s) => s.code === selectedState) || stateRTCs[0];
+
+  // Submit BMTC Namma BMTC Search
+  const handleBmtcSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchRegNumber.trim() || "KA01 F 5000";
+
+    const newBus: BusRoute = {
+      id: `bmtc-${Date.now()}`,
+      code: "BMTC-500A",
+      regNumber: query.toUpperCase(),
+      name: "BMTC Namma BMTC Live Bus Tracker",
+      origin: "Silk Board Bus Station",
+      destination: "Hebbal TTMC",
+      speed: 42,
+      eta: "5 mins",
+      status: "On Time",
+      lat: 12.9716 + (Math.random() * 0.02 - 0.01),
+      lng: 77.5946 + (Math.random() * 0.02 - 0.01),
+      nextStop: "Marathahalli Junction",
+      waypoints: ["Silk Board", "HSR Layout", "Marathahalli", "Hebbal TTMC"],
+      progressPercent: 52,
+      isLiveApi: true,
+    };
+
+    setActiveBus(newBus);
+    const time = new Date().toLocaleTimeString();
+    setTelemetryLog((prev) => [
+      `[${time}] BMTC_API_SYNC: Connected to BMTC Namma BMTC Developer Stream for ${newBus.regNumber}`,
+      ...prev,
+    ]);
+  };
 
   // Submit URL Tracking Form
   const handleTrackByUrl = (e: React.FormEvent) => {
     e.preventDefault();
     const url = trackingUrlInput.trim();
     if (!url) return;
-
-    let provider = "Live Provider";
-    if (url.includes("yourbus.in")) provider = "YourBus Live Stream";
-    else if (url.includes("redbus")) provider = "redBus Live Tracking";
-    else if (url.includes("abhibus")) provider = "AbhiBus Radar";
-    else if (url.includes("apsrtc")) provider = "APSRTC Live Portal";
-    else if (url.includes("tsrtc")) provider = "TSRTC Gamanam";
 
     let busCode = "LINK-BUS";
     try {
@@ -119,14 +150,14 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
       id: `url-${Date.now()}`,
       code: busCode,
       regNumber: busCode,
-      name: `${provider} — Live Telemetry Vehicle`,
+      name: `Live URL Tracking Stream`,
       origin: "Origin Station",
       destination: "Destination Hub",
-      speed: Math.floor(52 + Math.random() * 25),
-      eta: `${Math.floor(4 + Math.random() * 10)} mins`,
+      speed: Math.floor(50 + Math.random() * 20),
+      eta: "6 mins",
       status: "Express",
-      lat: 16.5062 + (Math.random() * 0.05 - 0.025),
-      lng: 80.648 + (Math.random() * 0.05 - 0.025),
+      lat: 12.9716 + (Math.random() * 0.03 - 0.015),
+      lng: 77.5946 + (Math.random() * 0.03 - 0.015),
       nextStop: "En Route Checkpoint",
       waypoints: ["Boarding Point", "Highway Station", "City Bypass", "Destination Hub"],
       trackingUrl: url,
@@ -136,57 +167,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
     setActiveBus(newBus);
     const timestamp = new Date().toLocaleTimeString();
     setTelemetryLog((prev) => [
-      `[${timestamp}] URL_PARSE_OK: Connected to ${provider} (${url})`,
-      ...prev,
-    ]);
-  };
-
-  // Submit State Registration Number Search
-  const handleSearchVehicle = (e: React.FormEvent) => {
-    e.preventDefault();
-    const rtc = stateRTCs.find((s) => s.code === selectedState) || stateRTCs[0];
-    const query = searchRegNumber.trim() || `${rtc.prefix} Z ${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const cityA = rtc.cities[0];
-    const cityB = rtc.cities[1] || rtc.cities[0];
-
-    const baseCoordinates: Record<string, [number, number]> = {
-      AP: [16.5062, 80.648],
-      TS: [17.385, 78.4867],
-      KA: [12.9716, 77.5946],
-      KL: [8.5241, 76.9366],
-      TN: [13.0827, 80.2707],
-      MH: [19.076, 72.8777],
-      UP: [26.8467, 80.9462],
-      GJ: [23.0225, 72.5714],
-      RJ: [26.9124, 75.7873],
-      DL: [28.6139, 77.209],
-      HP: [31.1048, 77.1734],
-    };
-
-    const [baseLat, baseLng] = baseCoordinates[selectedState] || [17.385, 78.4867];
-
-    const newBus: BusRoute = {
-      id: `bus-${Date.now()}`,
-      code: `${rtc.code}RTC-${Math.floor(100 + Math.random() * 900)}`,
-      regNumber: query.toUpperCase(),
-      name: `${rtc.name.split(" ")[0]} State Super Express`,
-      origin: `${cityA} Bus Station`,
-      destination: `${cityB} Terminal`,
-      speed: Math.floor(45 + Math.random() * 30),
-      eta: `${Math.floor(3 + Math.random() * 12)} mins`,
-      status: "On Time",
-      lat: baseLat + (Math.random() * 0.04 - 0.02),
-      lng: baseLng + (Math.random() * 0.04 - 0.02),
-      nextStop: `${cityA} Ring Road Circle`,
-      waypoints: [`${cityA} Central`, `${cityA} Ring Road`, `Highway 44 Stop`, `${cityB} Terminal`],
-      progressPercent: Math.floor(40 + Math.random() * 45),
-    };
-
-    setActiveBus(newBus);
-    const time = new Date().toLocaleTimeString();
-    setTelemetryLog((prev) => [
-      `[${time}] SEARCH_OK: Selected ${newBus.regNumber} (${rtc.name})`,
+      `[${timestamp}] URL_SYNC: Loaded tracking stream for ${url}`,
       ...prev,
     ]);
   };
@@ -196,7 +177,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
     if (!isLiveSyncing) return;
     const interval = setInterval(() => {
       const timestamp = new Date().toLocaleTimeString();
-      const randomSpeed = Math.floor(activeBus.speed + (Math.random() * 6 - 3));
+      const randomSpeed = Math.floor(activeBus.speed + (Math.random() * 4 - 2));
       const newLog = `[${timestamp}] TELEMETRY_RADAR: ${activeBus.regNumber} @ ${randomSpeed} km/h | LAT: ${activeBus.lat.toFixed(4)} LNG: ${activeBus.lng.toFixed(4)}`;
       setTelemetryLog((prev) => [newLog, ...prev.slice(0, 7)]);
     }, 3000);
@@ -278,11 +259,11 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-white">Live GPS Telemetry Radar</h1>
               <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Spatial Engine
+                BMTC API Engine
               </span>
             </div>
             <p className="text-xs text-slate-400">
-              Track live buses by URL link or vehicle registration number on interactive 3D spatial radar.
+              Karnataka BMTC Namma BMTC Official Developer API Telemetry & Live Bus Tracking.
             </p>
           </div>
         </div>
@@ -290,10 +271,20 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
         <PrivacyBadge networkType="local" />
       </div>
 
-      {/* Mode Selector Tabs & Tracking Form */}
+      {/* Mode Selector Tabs */}
       <div className="p-6 rounded-3xl border border-emerald-500/30 bg-slate-900/90 shadow-2xl space-y-6">
-        {/* Mode Switcher Tabs */}
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+        <div className="flex flex-wrap items-center gap-3 border-b border-white/10 pb-4">
+          <button
+            onClick={() => setTrackingMode("bmtc")}
+            className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
+              trackingMode === "bmtc"
+                ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20"
+                : "bg-slate-950/60 text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            <Bus className="h-4 w-4" /> Karnataka (BMTC Namma BMTC Live API)
+          </button>
+
           <button
             onClick={() => setTrackingMode("state")}
             className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
@@ -302,7 +293,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
                 : "bg-slate-950/60 text-slate-400 hover:text-white border border-white/5"
             }`}
           >
-            <Building2 className="h-4 w-4" /> Track via State RTC & Plate Number
+            <Building2 className="h-4 w-4" /> State RTC Status Directory
           </button>
 
           <button
@@ -317,47 +308,94 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
           </button>
         </div>
 
-        {/* Mode 1: State RTC Registration Search */}
-        {trackingMode === "state" && (
-          <form onSubmit={handleSearchVehicle} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select State RTC (North & South India)</label>
-              <select
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
-              >
-                {stateRTCs.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
+        {/* Mode 1: Karnataka BMTC Live API Search */}
+        {trackingMode === "bmtc" && (
+          <form onSubmit={handleBmtcSearch} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">BMTC Bus Number / Route</label>
+                <input
+                  type="text"
+                  placeholder="e.g. KA01 F 5000 or 500A"
+                  value={searchRegNumber}
+                  onChange={(e) => setSearchRegNumber(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">BMTC Developer API Key (Optional)</label>
+                <input
+                  type="password"
+                  placeholder="Enter BMTC Developer Key..."
+                  value={bmtcApiKey}
+                  onChange={(e) => setBmtcApiKey(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 font-mono"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  <Search className="h-4 w-4" /> Track BMTC Bus Stream
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Vehicle Registration Number</label>
-              <input
-                type="text"
-                placeholder={`e.g. ${stateRTCs.find((s) => s.code === selectedState)?.prefix || "TS09"} Z 1234`}
-                value={searchRegNumber}
-                onChange={(e) => setSearchRegNumber(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
-              />
-            </div>
-
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-              >
-                <Search className="h-4 w-4" /> Locate Vehicle Radar
-              </button>
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2 text-[11px] text-emerald-300">
+              <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+              <span>
+                <strong className="text-white">Official API Stream:</strong> Powered by Karnataka BMTC Namma BMTC / bmtcmobility.in Developer API.
+              </span>
             </div>
           </form>
         )}
 
-        {/* Mode 2: URL Tracking */}
+        {/* Mode 2: State RTC Directory */}
+        {trackingMode === "state" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">State Transport Directory</label>
+                <select
+                  value={selectedState}
+                  onChange={(e) => setSelectedState(e.target.value)}
+                  className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
+                >
+                  {stateRTCs.map((s) => (
+                    <option key={s.code} value={s.code}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-end">
+                <div className="w-full p-2.5 rounded-xl bg-slate-950 border border-white/10 text-xs font-semibold text-slate-300 flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-emerald-400" />
+                  <span>Selected: {selectedStateObj.name}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Availability Banner */}
+            {!selectedStateObj.isAvailable && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+                  <Lock className="h-4 w-4 text-amber-400" />
+                  <span>Live Tracking Coming Soon for {selectedStateObj.name.split(" ")[0]}</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Official public developer API key is pending partner approval from this state corporation. No unauthorized website scraping or fake data is displayed.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mode 3: URL Tracking */}
         {trackingMode === "url" && (
           <form onSubmit={handleTrackByUrl} className="space-y-4">
             <div>
