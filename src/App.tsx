@@ -4,6 +4,7 @@ import { Footer } from "./components/Footer";
 import { ToolCard } from "./components/ToolCard";
 import { BusTrackerView } from "./tools/bus/BusTrackerView";
 import { MotionHubToolsView } from "./tools/motionhub/MotionHubToolsView";
+import { UniversalDownloaderView } from "./tools/media/UniversalDownloaderView";
 import {
   Radio,
   Video,
@@ -228,6 +229,8 @@ export default function App() {
       <main className="flex-1">
         {activeTool === "bus-tracker" ? (
           <BusTrackerView onBack={() => setActiveTool(null)} />
+        ) : activeTool === "downloader" ? (
+          <UniversalDownloaderView onBack={() => setActiveTool(null)} />
         ) : activeTool ? (
           <MotionHubToolsView toolId={activeTool} onBack={() => setActiveTool(null)} />
         ) : null}
