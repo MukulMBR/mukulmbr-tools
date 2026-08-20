@@ -38,7 +38,7 @@ export default function App() {
     "Media Utilities",
   ];
 
-  // All 18 Tools from Motion Hub / Bus Tracker App Suite
+  // All 18 Tools from MBR Motion Hub Suite
   const toolsList = [
     // 1. Live GPS Radar (1)
     {
@@ -156,7 +156,7 @@ export default function App() {
     {
       id: "downloader",
       title: "Universal Media Downloader",
-      description: "Extract high-definition video, audio, and MP3 streams directly in browser memory.",
+      description: "Extract Instagram Reels, YouTube HD, TikTok, and Twitter videos directly in browser memory.",
       icon: Download,
       category: "Media Utilities",
       status: "Ready" as const,
@@ -223,7 +223,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0b14] text-slate-100 font-sans">
+    <div className="min-h-screen flex flex-col bg-[#07090e] text-slate-100 font-sans">
       <Navbar />
 
       <main className="flex-1">
@@ -237,42 +237,42 @@ export default function App() {
 
         {!activeTool && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            {/* Hero Banner */}
-            <div className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-purple-950/20 via-slate-900/40 to-slate-900/60 p-8 sm:p-12 mb-12 text-center overflow-hidden backdrop-blur-xl">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10 pointer-events-none" />
+            {/* Hero Banner with Emerald Mint & Deep Obsidian Gradient */}
+            <div className="relative rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-emerald-950/20 via-slate-900/40 to-slate-950/80 p-8 sm:p-12 mb-12 text-center overflow-hidden backdrop-blur-xl shadow-2xl shadow-emerald-950/20">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-semibold mb-4">
                 <Sparkles className="h-3.5 w-3.5" />
-                MBR Motion Hub — All 18 Studio Tools & GPS Telemetry Radar
+                MBR Motion Hub — Spatial Telemetry & Browser Engine
               </div>
 
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-                18 Tools Processed <span className="gradient-text">100% Locally</span>
+                Live GPS Radar & <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">Studio Engine</span>
               </h1>
               <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-400 leading-relaxed mb-8">
-                Live GPS bus telemetry radar, AI video editing, audio TTS synthesis, media downloads, and automation utilities. Zero server file uploads.
+                Perform live GPS bus tracking, social video downloads, video editing, speech TTS synthesis, and AI automation. 100% private local execution.
               </p>
 
-              {/* Search & Filter */}
+              {/* Search & Category Filter */}
               <div className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search 18 tools (GPS Radar, Video Editor, TTS, Downloader)..."
+                    placeholder="Search 18 engines (GPS Radar, Downloader, TTS Studio, Cut Studio)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-900/90 border border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full bg-slate-950/90 border border-emerald-500/20 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors shadow-inner"
                   />
                 </div>
-                <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0 justify-center">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0 justify-center">
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`text-xs px-3 py-2 rounded-xl border transition-all whitespace-nowrap ${
+                      className={`text-xs px-3.5 py-2.5 rounded-xl border transition-all whitespace-nowrap font-medium ${
                         selectedCategory === cat
-                          ? "bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20 font-medium"
+                          ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/25"
                           : "bg-slate-900/60 border-white/10 text-slate-400 hover:text-white hover:bg-slate-800"
                       }`}
                     >
@@ -286,11 +286,13 @@ export default function App() {
             {/* Tools Grid */}
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-purple-400" />
-                  Motion Hub Tools Ecosystem ({filteredTools.length})
+                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-emerald-400" />
+                  Motion Hub Studio Tools ({filteredTools.length})
                 </h2>
-                <span className="text-xs text-slate-400">All 18 Tools Available</span>
+                <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                  All 18 Engines Active
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -311,25 +313,25 @@ export default function App() {
 
             {/* Features Highlight */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/10">
-              <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/30">
+              <div className="p-6 rounded-2xl border border-emerald-500/15 bg-slate-900/30">
                 <Lock className="h-6 w-6 text-emerald-400 mb-3" />
                 <h3 className="text-sm font-bold text-white mb-1">100% Client-Side Privacy</h3>
                 <p className="text-xs text-slate-400">
-                  All 18 tools process data locally in your browser instance.
+                  All 18 engines process media locally inside your browser memory.
                 </p>
               </div>
-              <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/30">
-                <Zap className="h-6 w-6 text-purple-400 mb-3" />
-                <h3 className="text-sm font-bold text-white mb-1">Lightning Fast Execution</h3>
+              <div className="p-6 rounded-2xl border border-emerald-500/15 bg-slate-900/30">
+                <Zap className="h-6 w-6 text-emerald-400 mb-3" />
+                <h3 className="text-sm font-bold text-white mb-1">Lightning Acceleration</h3>
                 <p className="text-xs text-slate-400">
-                  Zero server lag. Instant processing powered by local CPU & GPU acceleration.
+                  Instant processing powered by local CPU & WebAssembly GPU acceleration.
                 </p>
               </div>
-              <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/30">
-                <Layers className="h-6 w-6 text-blue-400 mb-3" />
-                <h3 className="text-sm font-bold text-white mb-1">Standalone Repository</h3>
+              <div className="p-6 rounded-2xl border border-emerald-500/15 bg-slate-900/30">
+                <Layers className="h-6 w-6 text-emerald-400 mb-3" />
+                <h3 className="text-sm font-bold text-white mb-1">Decoupled Architecture</h3>
                 <p className="text-xs text-slate-400">
-                  Decoupled architecture deployed at <code>tools.mukulmbr.in</code>.
+                  Independent codebase deployed live at <code>tools.mukulmbr.in</code>.
                 </p>
               </div>
             </div>
