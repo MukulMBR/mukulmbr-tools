@@ -14,6 +14,7 @@ import {
   Globe,
   Film,
   Zap,
+  Scissors,
 } from "lucide-react";
 
 export function UniversalDownloaderView({ onBack }: { onBack: () => void }) {
@@ -243,6 +244,27 @@ export function UniversalDownloaderView({ onBack }: { onBack: () => void }) {
                   >
                     <Download className="h-4 w-4" /> Download {format.toUpperCase()} Media Now
                   </button>
+
+                  {/* Tool-to-Tool Studio Workflows */}
+                  <div className="pt-3 border-t border-white/10 space-y-2">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                      Tool-to-Tool Studio Workflows
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <a
+                        href="/?tool=video-trimmer"
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white flex items-center justify-center gap-1.5 border border-white/10 transition-colors"
+                      >
+                        <Scissors className="h-3.5 w-3.5 text-emerald-400" /> Trim Clip ✂️
+                      </a>
+                      <a
+                        href="/?tool=audio-extractor"
+                        className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white flex items-center justify-center gap-1.5 border border-white/10 transition-colors"
+                      >
+                        <Music className="h-3.5 w-3.5 text-teal-400" /> Extract Audio 🎵
+                      </a>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="rounded-xl border border-white/5 bg-slate-950/40 p-8 text-center text-slate-500 text-xs flex flex-col items-center justify-center min-h-[240px]">

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Radio, ArrowUpRight, ShieldCheck, Download, Command, Search, Smartphone, X, Monitor } from "lucide-react";
+import { Radio, ArrowUpRight, ShieldCheck, Download, Command, Search, Smartphone, X, Monitor, Sparkles } from "lucide-react";
 import { CommandPalette } from "./CommandPalette";
+import { ChangelogModal } from "./shared/ChangelogModal";
+import { KeyboardShortcutsModal } from "./shared/KeyboardShortcutsModal";
 
 interface NavbarProps {
   tools?: Array<{
@@ -17,6 +19,7 @@ export function Navbar({ tools = [], onSelectTool = () => {} }: NavbarProps) {
   const [isInstalled, setIsInstalled] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showChangelogModal, setShowChangelogModal] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstall = (e: Event) => {
@@ -92,6 +95,16 @@ export function Navbar({ tools = [], onSelectTool = () => {} }: NavbarProps) {
 
           {/* Action Links, Cmd+K Palette, & Install App CTA */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* What's New Changelog Trigger */}
+            <button
+              onClick={() => setShowChangelogModal(true)}
+              title="What's New in MBR Motion Hub"
+              className="flex items-center gap-1.5 text-xs font-semibold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-1.5 rounded-xl border border-emerald-500/30 transition-all"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="hidden lg:inline">What's New</span>
+            </button>
+
             {/* Cmd+K Command Palette Trigger */}
             <button
               onClick={() => setShowCommandPalette(true)}
@@ -188,6 +201,15 @@ export function Navbar({ tools = [], onSelectTool = () => {} }: NavbarProps) {
         onSelectTool={onSelectTool}
         tools={tools}
       />
+
+      {/* What's New Changelog Modal */}
+      <ChangelogModal
+        isOpen={showChangelogModal}
+        onClose={() => setShowChangelogModal(false)}
+      />
+
+      {/* HUD Keyboard Shortcuts Cheat Sheet Overlay (? key) */}
+      <KeyboardShortcutsModal />
     </>
   );
 }
