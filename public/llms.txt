@@ -1,0 +1,28 @@
+# MBR Tools — Privacy-First Browser Utilities Ecosystem
+
+> Domain: https://tools.mukulmbr.in
+> Developer: Mukul Bushi Reddy M (https://mukulmbr.in)
+> GitHub Repository: https://github.com/MukulMBR/mukulmbr-tools
+
+## Overview
+MBR Tools is an independent suite of 18 fast, browser-native online utilities designed for 100% privacy, zero file server uploads, and high performance.
+
+## Available Tool Modules
+1. **Live GPS Telemetry Radar** (Category: Live GPS Radar): Interactive 3D spatial radar tracking live bus telemetry, routes, speed, waypoints, and ETA calculations.
+2. **Prompt Video Editor** (Category: Video Studio): Generate video edits and scene transitions using natural language text prompts.
+3. **Full Video Editor Studio** (Category: Video Studio): Multi-track video timeline editing, text overlays, audio sync, and canvas rendering.
+4. **Video Trimmer & Cut Studio** (Category: Video Studio): Trim start/end timestamps, cut clips, and export MP4 segments.
+5. **Video Enhancer & AI Upscaler** (Category: Video Studio): RealESRGAN and GFPGAN AI video resolution upscaling & noise reduction.
+6. **Camera Director Studio** (Category: Video Studio): AI camera switching, auto framing, and scene director controls.
+7. **Audio Trimmer & Cutter** (Category: Audio & Speech): Trim audio track timestamps, cut silence, and export MP3/WAV files.
+8. **Audio Track Extractor** (Category: Audio & Speech): Extract background music and vocal tracks directly from videos.
+9. **TTS Speech Studio** (Category: Audio & Speech): Text-to-speech synthesis with speed rate, pitch control, and audio playback.
+10. **AI Channel Strategist** (Category: AI & Automation): Generate video titles, channel growth strategies, tags, and script outlines.
+11. **AI Subtitle Generator** (Category: AI & Automation): Speech-to-text automated captioning and SRT transcript generation.
+12. **Auto Video Stitcher** (Category: AI & Automation): Automatically join and stitch multiple video clips into a single master video.
+13. **Universal Media Downloader** (Category: Media Utilities): Extract high-definition video, audio, and MP3 streams directly in browser memory.
+14. **GIF Studio Maker** (Category: Media Utilities): Convert video clips and image sequences into animated high-quality GIFs.
+15. **Thumbnail Generator** (Category: Media Utilities): Design eye-catching video thumbnails with title text and graphics.
+16. **Browser Screen Recorder** (Category: Media Utilities): Record screen, webcam, and system audio directly in web browser.
+17. **Watermark Studio & Remover** (Category: Media Utilities): Inpaint, mask, and add custom logos/watermarks to video media.
+18. **Video Compressor Studio** (Category: Media Utilities): Compress large video files for web and social media without quality loss.
