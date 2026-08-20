@@ -44,7 +44,7 @@ export function Footer() {
             <a
               href="https://mukulmbr.in"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors"
             >
               <Globe className="h-3.5 w-3.5" />
@@ -53,7 +53,7 @@ export function Footer() {
             <a
               href="https://github.com/MukulMBR"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition-colors"
             >
               <Github className="h-3.5 w-3.5" />

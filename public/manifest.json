@@ -1,0 +1,24 @@
+{
+  "name": "MBR Motion Hub",
+  "short_name": "Motion Hub",
+  "description": "18 browser-native engines for live GPS bus tracking, social video downloads, video editing, speech TTS synthesis, and AI media automation.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07090e",
+  "theme_color": "#07090e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
