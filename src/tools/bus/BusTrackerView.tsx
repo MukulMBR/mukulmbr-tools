@@ -184,6 +184,21 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
     ]);
   };
 
+  const [reverseGeocodeAddress, setReverseGeocodeAddress] = useState<string>("Fetching OpenStreetMap location...");
+
+  // OpenStreetMap Nominatim Reverse Geocoding Public API
+  useEffect(() => {
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${activeBus.lat}&lon=${activeBus.lng}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.display_name) {
+          const shortAddress = data.display_name.split(",").slice(0, 3).join(",");
+          setReverseGeocodeAddress(shortAddress);
+        }
+      })
+      .catch(() => setReverseGeocodeAddress("En Route Location Sector"));
+  }, [activeBus.lat, activeBus.lng]);
+
   // Dynamic Telemetry Pulse Sync
   useEffect(() => {
     if (!isLiveSyncing) return;
@@ -480,9 +495,13 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80">
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Next Stop</div>
-              <div className="text-xs font-bold text-slate-200 truncate">{activeBus.nextStop}</div>
+            <div className="p-4 rounded-2xl border border-white/10 bg-slate-900/80 sm:col-span-2">
+              <div className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <Globe className="h-3 w-3" /> Live OpenStreetMap Reverse Location
+              </div>
+              <div className="text-xs font-bold text-slate-200 truncate" title={reverseGeocodeAddress}>
+                {reverseGeocodeAddress}
+              </div>
             </div>
           </div>
         </div>

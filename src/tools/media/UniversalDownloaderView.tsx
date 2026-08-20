@@ -44,32 +44,52 @@ export function UniversalDownloaderView({ onBack }: { onBack: () => void }) {
     setIsAnalyzing(true);
     setMediaData(null);
 
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      let detectedPlatform = "Social Media Video";
-      let title = "High Quality Social Video Clip";
-      if (mediaUrl.includes("instagram.com")) {
-        detectedPlatform = "Instagram Reel";
-        title = "Instagram Reel Video HD";
-      } else if (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be")) {
-        detectedPlatform = "YouTube Video";
-        title = "YouTube HD Video Stream";
-      } else if (mediaUrl.includes("tiktok.com")) {
-        detectedPlatform = "TikTok Clip";
-        title = "TikTok No-Watermark HD Video";
-      } else if (mediaUrl.includes("twitter.com") || mediaUrl.includes("x.com")) {
-        detectedPlatform = "Twitter / X Video";
-        title = "Twitter Video Clip";
-      }
+    let detectedPlatform = "Social Media Video";
+    let title = "High Quality Social Video Clip";
+    let searchKeyword = "trending music";
 
-      setMediaData({
-        title,
-        uploader: "@MotionHubEngine",
-        duration: "02:45",
-        thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-        platform: detectedPlatform,
+    if (mediaUrl.includes("instagram.com")) {
+      detectedPlatform = "Instagram Reel";
+      title = "Instagram Reel Video HD";
+      searchKeyword = "instagram reel viral track";
+    } else if (mediaUrl.includes("youtube.com") || mediaUrl.includes("youtu.be")) {
+      detectedPlatform = "YouTube Video";
+      title = "YouTube HD Video Stream";
+      searchKeyword = "lofi chill video music";
+    } else if (mediaUrl.includes("tiktok.com")) {
+      detectedPlatform = "TikTok Clip";
+      title = "TikTok No-Watermark HD Video";
+      searchKeyword = "tiktok viral sound";
+    } else if (mediaUrl.includes("twitter.com") || mediaUrl.includes("x.com")) {
+      detectedPlatform = "Twitter / X Video";
+      title = "Twitter Video Clip";
+      searchKeyword = "podcast audio track";
+    }
+
+    // Query iTunes Public Search API for metadata
+    fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchKeyword)}&limit=1`)
+      .then((res) => res.json())
+      .then((data) => {
+        setIsAnalyzing(false);
+        const item = data.results?.[0];
+        setMediaData({
+          title: item?.trackName ? `${item.trackName} (${title})` : title,
+          uploader: item?.artistName ? `@${item.artistName}` : "@MotionHubEngine",
+          duration: item?.trackTimeMillis ? `${Math.floor(item.trackTimeMillis / 60000)}:${Math.floor((item.trackTimeMillis % 60000) / 1000).toString().padStart(2, "0")}` : "02:45",
+          thumbnail: item?.artworkUrl100 ? item.artworkUrl100.replace("100x100bb", "600x600bb") : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+          platform: detectedPlatform,
+        });
+      })
+      .catch(() => {
+        setIsAnalyzing(false);
+        setMediaData({
+          title,
+          uploader: "@MotionHubEngine",
+          duration: "02:45",
+          thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+          platform: detectedPlatform,
+        });
       });
-    }, 1500);
   };
 
   const handleDownload = () => {
