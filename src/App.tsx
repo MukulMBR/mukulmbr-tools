@@ -6,6 +6,7 @@ import { DPIToolView } from "./tools/dpi/DPIToolView";
 import { ImageToolsView } from "./tools/image/ImageToolsView";
 import { PDFToolsView } from "./tools/pdf/PDFToolsView";
 import { JSONToolView } from "./tools/json/JSONToolView";
+import { BusTrackerView } from "./tools/bus/BusTrackerView";
 import {
   FileText,
   Monitor,
@@ -16,6 +17,7 @@ import {
   Lock,
   Layers,
   Sparkles,
+  Radio,
 } from "lucide-react";
 
 export default function App() {
@@ -23,9 +25,18 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  const categories = ["All", "PDF", "DPI", "Image", "Developer"];
+  const categories = ["All", "Radar", "PDF", "DPI", "Image", "Developer"];
 
   const toolsList = [
+    {
+      id: "bus-tracker",
+      title: "Live GPS Bus Radar",
+      description: "Interactive 3D spatial radar tracking live bus telemetry, routes, speed, waypoints, and ETA calculations.",
+      icon: Radio,
+      category: "Radar",
+      status: "Ready" as const,
+      badge: "Live Telemetry",
+    },
     {
       id: "pdf-merger",
       title: "PDF Merger & Suite",
@@ -77,6 +88,9 @@ export default function App() {
       <Navbar />
 
       <main className="flex-1">
+        {activeTool === "bus-tracker" && (
+          <BusTrackerView onBack={() => setActiveTool(null)} />
+        )}
         {activeTool === "dpi-calculator" && (
           <DPIToolView onBack={() => setActiveTool(null)} />
         )}
@@ -98,14 +112,14 @@ export default function App() {
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-4">
                 <Sparkles className="h-3.5 w-3.5" />
-                Privacy-First Online Utilities Ecosystem
+                Privacy-First Online Utilities & Telemetry Ecosystem
               </div>
 
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-                Browser Tools Built for <span className="gradient-text">Speed & Privacy</span>
+                Browser Tools & GPS Radar <span className="gradient-text">Built for Speed</span>
               </h1>
               <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-400 leading-relaxed mb-8">
-                Perform file conversions, PDF editing, image processing, and resolution calculations directly in your web browser. Zero server uploads.
+                Perform live GPS bus tracking, file conversions, PDF editing, image processing, and resolution calculations directly in your web browser. Zero server uploads.
               </p>
 
               {/* Search & Filter */}
@@ -114,7 +128,7 @@ export default function App() {
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search tools (PDF, DPI, Image, JSON)..."
+                    placeholder="Search tools (Radar, PDF, DPI, Image, JSON)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-slate-900/90 border border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
@@ -170,7 +184,7 @@ export default function App() {
                 <Lock className="h-6 w-6 text-emerald-400 mb-3" />
                 <h3 className="text-sm font-bold text-white mb-1">100% Client-Side Privacy</h3>
                 <p className="text-xs text-slate-400">
-                  Files are processed using HTML5 Canvas & Web API in your browser instance.
+                  Files and telemetry are processed locally in your browser instance.
                 </p>
               </div>
               <div className="p-6 rounded-2xl border border-white/5 bg-slate-900/30">
