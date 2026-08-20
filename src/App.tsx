@@ -2,22 +2,21 @@ import React, { useState } from "react";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ToolCard } from "./components/ToolCard";
-import { DPIToolView } from "./tools/dpi/DPIToolView";
-import { ImageToolsView } from "./tools/image/ImageToolsView";
-import { PDFToolsView } from "./tools/pdf/PDFToolsView";
-import { JSONToolView } from "./tools/json/JSONToolView";
 import { BusTrackerView } from "./tools/bus/BusTrackerView";
+import { UniversalDownloaderView } from "./tools/media/UniversalDownloaderView";
+import { VideoEditorView } from "./tools/media/VideoEditorView";
+import { AudioStudioView } from "./tools/media/AudioStudioView";
+import { AIUtilitiesView } from "./tools/media/AIUtilitiesView";
 import {
-  FileText,
-  Monitor,
-  Image as ImageIcon,
-  Code,
+  Download,
+  Scissors,
+  Mic,
+  Sparkles,
+  Radio,
   Search,
   Zap,
   Lock,
   Layers,
-  Sparkles,
-  Radio,
 } from "lucide-react";
 
 export default function App() {
@@ -25,7 +24,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  const categories = ["All", "Radar", "PDF", "DPI", "Image", "Developer"];
+  const categories = ["All", "Radar", "Video", "Audio", "AI & Utilities"];
 
   const toolsList = [
     {
@@ -38,40 +37,40 @@ export default function App() {
       badge: "Live Telemetry",
     },
     {
-      id: "pdf-merger",
-      title: "PDF Merger & Suite",
-      description: "Combine, split, and convert PDF documents in your browser memory without uploading files to servers.",
-      icon: FileText,
-      category: "PDF",
+      id: "downloader",
+      title: "Universal Media Downloader",
+      description: "Extract high-definition video, audio, and MP3 streams directly in your browser memory.",
+      icon: Download,
+      category: "Video",
       status: "Ready" as const,
-      badge: "Client-Side",
+      badge: "Media Extractor",
     },
     {
-      id: "dpi-calculator",
-      title: "DPI Resolution Converter",
-      description: "Calculate print dimensions (Inches, CM, MM) or pixel count for target DPI/PPI resolutions.",
-      icon: Monitor,
-      category: "DPI",
+      id: "video-editor",
+      title: "Video Trimmer & Cut Studio",
+      description: "Trim video timestamps, cut segments, and export edited MP4 video clips locally.",
+      icon: Scissors,
+      category: "Video",
       status: "Ready" as const,
-      badge: "Calculator",
+      badge: "Cut Studio",
     },
     {
-      id: "image-converter",
-      title: "Image Converter & Resizer",
-      description: "Convert formats (WebP, PNG, JPEG), adjust quality compression, and resize image dimensions using Canvas API.",
-      icon: ImageIcon,
-      category: "Image",
+      id: "audio-studio",
+      title: "Audio & Speech TTS Studio",
+      description: "Text-to-Speech synthesis rate control and audio track extraction with browser AI.",
+      icon: Mic,
+      category: "Audio",
       status: "Ready" as const,
-      badge: "Canvas API",
+      badge: "TTS & Audio",
     },
     {
-      id: "json-formatter",
-      title: "JSON Formatter & Minifier",
-      description: "Format, validate, beautify, and minify JSON code snippets instantly with syntax verification.",
-      icon: Code,
-      category: "Developer",
+      id: "ai-utilities",
+      title: "AI Subtitle & Media Automation",
+      description: "AI subtitle transcription, Thumbnail/GIF creator, Watermark removal, and Video compression.",
+      icon: Sparkles,
+      category: "AI & Utilities",
       status: "Ready" as const,
-      badge: "Dev Utility",
+      badge: "AI Automation",
     },
   ];
 
@@ -91,17 +90,17 @@ export default function App() {
         {activeTool === "bus-tracker" && (
           <BusTrackerView onBack={() => setActiveTool(null)} />
         )}
-        {activeTool === "dpi-calculator" && (
-          <DPIToolView onBack={() => setActiveTool(null)} />
+        {activeTool === "downloader" && (
+          <UniversalDownloaderView onBack={() => setActiveTool(null)} />
         )}
-        {activeTool === "image-converter" && (
-          <ImageToolsView onBack={() => setActiveTool(null)} />
+        {activeTool === "video-editor" && (
+          <VideoEditorView onBack={() => setActiveTool(null)} />
         )}
-        {activeTool === "pdf-merger" && (
-          <PDFToolsView onBack={() => setActiveTool(null)} />
+        {activeTool === "audio-studio" && (
+          <AudioStudioView onBack={() => setActiveTool(null)} />
         )}
-        {activeTool === "json-formatter" && (
-          <JSONToolView onBack={() => setActiveTool(null)} />
+        {activeTool === "ai-utilities" && (
+          <AIUtilitiesView onBack={() => setActiveTool(null)} />
         )}
 
         {!activeTool && (
@@ -112,14 +111,14 @@ export default function App() {
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-medium mb-4">
                 <Sparkles className="h-3.5 w-3.5" />
-                Privacy-First Online Utilities & Telemetry Ecosystem
+                Live GPS Telemetry Radar & Media Studio Ecosystem
               </div>
 
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-                Browser Tools & GPS Radar <span className="gradient-text">Built for Speed</span>
+                Your Tools & GPS Radar <span className="gradient-text">Processed Locally</span>
               </h1>
               <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-400 leading-relaxed mb-8">
-                Perform live GPS bus tracking, file conversions, PDF editing, image processing, and resolution calculations directly in your web browser. Zero server uploads.
+                Perform live GPS bus tracking, media extraction, video trimming, audio TTS synthesis, and AI automation directly in your web browser. Zero server uploads.
               </p>
 
               {/* Search & Filter */}
@@ -128,7 +127,7 @@ export default function App() {
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search tools (Radar, PDF, DPI, Image, JSON)..."
+                    placeholder="Search tools (Radar, Video, Audio, AI)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-slate-900/90 border border-white/15 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
@@ -157,7 +156,7 @@ export default function App() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Zap className="h-5 w-5 text-purple-400" />
-                  Available Utilities
+                  Studio Utilities
                 </h2>
                 <span className="text-xs text-slate-400">{filteredTools.length} Tool(s) Ready</span>
               </div>
