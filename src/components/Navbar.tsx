@@ -1,7 +1,51 @@
-import React from "react";
-import { Radio, ArrowUpRight, ShieldCheck, Sparkles } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Radio, ArrowUpRight, ShieldCheck, Download, Smartphone } from "lucide-react";
 
 export function Navbar() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstall);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setIsInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        setIsInstalled(true);
+      }
+      setDeferredPrompt(null);
+    } else {
+      alert(
+        "To install MBR Motion Hub on your phone or computer:\n\n" +
+          "• On Mobile: Tap 'Share' or browser menu (⋮) -> Select 'Add to Home Screen'\n" +
+          "• On Desktop: Click the Install icon in your browser address bar (top right)"
+      );
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-emerald-500/15 bg-[#07090e]/85 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -26,9 +70,20 @@ export function Navbar() {
           </div>
         </a>
 
-        {/* Action Links */}
+        {/* Action Links & Install App CTA */}
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 text-xs text-slate-300 bg-slate-900/80 px-3.5 py-1.5 rounded-xl border border-emerald-500/20 shadow-inner">
+          {/* Install App PWA CTA Button */}
+          {!isInstalled && (
+            <button
+              onClick={handleInstallClick}
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 px-3.5 py-2 rounded-xl shadow-lg shadow-emerald-500/20 transition-all scale-100 hover:scale-105"
+            >
+              <Download className="h-4 w-4" />
+              <span>Install App</span>
+            </button>
+          )}
+
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-300 bg-slate-900/80 px-3.5 py-1.5 rounded-xl border border-emerald-500/20 shadow-inner">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="font-medium">100% Client-Side Engine</span>
           </div>
