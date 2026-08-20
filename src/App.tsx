@@ -44,10 +44,22 @@ function ToolLoadingSkeleton() {
   );
 }
 
+import { getFavoriteToolIds, toggleFavoriteTool } from "./lib/favorites";
+import { Star } from "lucide-react";
+
 export default function App() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => getFavoriteToolIds());
+
+  useEffect(() => {
+    const handleFavUpdated = (e: any) => {
+      setFavoriteIds(e.detail || getFavoriteToolIds());
+    };
+    window.addEventListener("mbr:favorites-updated", handleFavUpdated);
+    return () => window.removeEventListener("mbr:favorites-updated", handleFavUpdated);
+  }, []);
 
   // Sync URL Query Parameters (?tool=id) for direct sharing & bookmarking
   useEffect(() => {
@@ -249,6 +261,8 @@ export default function App() {
     },
   ];
 
+  const favoriteTools = toolsList.filter((tool) => favoriteIds.includes(tool.id));
+
   const filteredTools = toolsList.filter((tool) => {
     const matchesCategory = selectedCategory === "All" || tool.category === selectedCategory;
     const matchesQuery =
@@ -331,7 +345,40 @@ export default function App() {
               </div>
             </div>
 
-            {/* Tools Grid */}
+            {/* Pinned Favorites Section (Shown only when user has >= 1 favorite) */}
+            {favoriteTools.length > 0 && (
+              <div className="mb-12 p-6 sm:p-8 rounded-3xl border border-amber-500/30 bg-slate-900/90 shadow-2xl shadow-amber-950/20">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                    <Star className="h-5 w-5 text-amber-400 fill-amber-400" />
+                    Pinned Favorite Engines ({favoriteTools.length})
+                  </h2>
+                  <span className="text-[10px] font-medium text-amber-300 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                    Saved on this device
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {favoriteTools.map((tool) => (
+                    <ToolCard
+                      key={`fav-${tool.id}`}
+                      id={tool.id}
+                      title={tool.title}
+                      description={tool.description}
+                      icon={tool.icon}
+                      category={tool.category}
+                      status={tool.status}
+                      badge={tool.badge}
+                      isFavorite={true}
+                      onToggleFavorite={() => toggleFavoriteTool(tool.id)}
+                      onClick={() => handleSelectTool(tool.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* All Tools Grid */}
             <div className="mb-12">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
@@ -347,12 +394,15 @@ export default function App() {
                 {filteredTools.map((tool) => (
                   <ToolCard
                     key={tool.id}
+                    id={tool.id}
                     title={tool.title}
                     description={tool.description}
                     icon={tool.icon}
                     category={tool.category}
                     status={tool.status}
                     badge={tool.badge}
+                    isFavorite={favoriteIds.includes(tool.id)}
+                    onToggleFavorite={() => toggleFavoriteTool(tool.id)}
                     onClick={() => handleSelectTool(tool.id)}
                   />
                 ))}

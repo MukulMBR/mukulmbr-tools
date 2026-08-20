@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Search, Command, X, Zap, ArrowRight } from "lucide-react";
+import { Search, Command, X, Zap, ArrowRight, Star } from "lucide-react";
+import { getFavoriteToolIds } from "../lib/favorites";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -17,7 +18,18 @@ export function CommandPalette({ isOpen, onClose, onSelectTool, tools }: Command
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const filtered = tools.filter(
+  const favoriteIds = getFavoriteToolIds();
+
+  // Sort: Favorited tools appear at top
+  const sortedTools = [...tools].sort((a, b) => {
+    const aFav = favoriteIds.includes(a.id);
+    const bFav = favoriteIds.includes(b.id);
+    if (aFav && !bFav) return -1;
+    if (!aFav && bFav) return 1;
+    return 0;
+  });
+
+  const filtered = sortedTools.filter(
     (t) =>
       t.title.toLowerCase().includes(query.toLowerCase()) ||
       t.description.toLowerCase().includes(query.toLowerCase()) ||
@@ -80,6 +92,8 @@ export function CommandPalette({ isOpen, onClose, onSelectTool, tools }: Command
           {filtered.length > 0 ? (
             filtered.map((tool, idx) => {
               const isSelected = idx === selectedIndex;
+              const isFav = favoriteIds.includes(tool.id);
+
               return (
                 <div
                   key={tool.id}
@@ -95,12 +109,23 @@ export function CommandPalette({ isOpen, onClose, onSelectTool, tools }: Command
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
-                      <Zap className="h-4 w-4" />
+                    <div
+                      className={`h-8 w-8 rounded-lg border flex items-center justify-center ${
+                        isFav
+                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                          : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      }`}
+                    >
+                      {isFav ? <Star className="h-4 w-4 fill-amber-400" /> : <Zap className="h-4 w-4" />}
                     </div>
                     <div>
                       <div className="text-xs font-bold text-white flex items-center gap-2">
                         {tool.title}
+                        {isFav && (
+                          <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            Favorite
+                          </span>
+                        )}
                         <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-white/5">
                           {tool.category}
                         </span>
