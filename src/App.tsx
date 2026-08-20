@@ -253,33 +253,35 @@ export default function App() {
                 Perform live GPS bus tracking, social video downloads, video editing, speech TTS synthesis, and AI automation. 100% private local execution.
               </p>
 
-              {/* Search & Category Filter */}
-              <div className="max-w-3xl mx-auto flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              {/* Search Bar (Full Width Centered Row) */}
+              <div className="max-w-2xl mx-auto mb-6">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-400" />
                   <input
                     type="text"
                     placeholder="Search 18 engines (GPS Radar, Downloader, TTS Studio, Cut Studio)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-slate-950/90 border border-emerald-500/20 rounded-xl pl-10 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 transition-colors shadow-inner"
+                    className="w-full bg-slate-950/90 border border-emerald-500/30 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-all shadow-xl shadow-slate-950/50"
                   />
                 </div>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0 justify-center">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`text-xs px-3.5 py-2.5 rounded-xl border transition-all whitespace-nowrap font-medium ${
-                        selectedCategory === cat
-                          ? "bg-emerald-500 border-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/25"
-                          : "bg-slate-900/60 border-white/10 text-slate-400 hover:text-white hover:bg-slate-800"
-                      }`}
-                    >
-                      {cat} ({getCategoryCount(cat)})
-                    </button>
-                  ))}
-                </div>
+              </div>
+
+              {/* Category Filter Pills (Clean Wrapped Pills Row) */}
+              <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`text-xs px-4 py-2.5 rounded-xl border transition-all font-semibold ${
+                      selectedCategory === cat
+                        ? "bg-emerald-500 border-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25 scale-105"
+                        : "bg-slate-950/60 border-white/10 text-slate-300 hover:text-white hover:border-emerald-500/30 hover:bg-slate-900"
+                    }`}
+                  >
+                    {cat} ({getCategoryCount(cat)})
+                  </button>
+                ))}
               </div>
             </div>
 
