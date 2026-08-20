@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { ToolCard } from "./components/ToolCard";
-import { BusTrackerView } from "./tools/bus/BusTrackerView";
-import { MotionHubToolsView } from "./tools/motionhub/MotionHubToolsView";
-import { UniversalDownloaderView } from "./tools/media/UniversalDownloaderView";
+import { ToolErrorBoundary } from "./components/shared/ToolErrorBoundary";
 import {
   Radio,
   Video,
@@ -22,12 +20,54 @@ import {
   Zap,
   Search,
   Lock,
+  Loader2,
 } from "lucide-react";
+
+// Route-Level Code Splitting for All 18 Tool Engines (React.lazy + Suspense)
+const BusTrackerView = React.lazy(() =>
+  import("./tools/bus/BusTrackerView").then((m) => ({ default: m.BusTrackerView }))
+);
+const UniversalDownloaderView = React.lazy(() =>
+  import("./tools/media/UniversalDownloaderView").then((m) => ({ default: m.UniversalDownloaderView }))
+);
+const MotionHubToolsView = React.lazy(() =>
+  import("./tools/motionhub/MotionHubToolsView").then((m) => ({ default: m.MotionHubToolsView }))
+);
+
+function ToolLoadingSkeleton() {
+  return (
+    <div className="max-w-4xl mx-auto my-16 p-12 rounded-3xl border border-emerald-500/20 bg-slate-900/60 backdrop-blur-xl text-center space-y-4">
+      <Loader2 className="h-10 w-10 text-emerald-400 animate-spin mx-auto" />
+      <h3 className="text-lg font-bold text-white">Loading Engine Module...</h3>
+      <p className="text-xs text-slate-400">Initializing client-side WebAssembly & browser memory environment.</p>
+    </div>
+  );
+}
 
 export default function App() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  // Sync URL Query Parameters (?tool=id) for direct sharing & bookmarking
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const toolParam = params.get("tool");
+    if (toolParam) {
+      setActiveTool(toolParam);
+    }
+  }, []);
+
+  const handleSelectTool = (toolId: string | null) => {
+    setActiveTool(toolId);
+    const url = new URL(window.location.href);
+    if (toolId) {
+      url.searchParams.set("tool", toolId);
+    } else {
+      url.searchParams.delete("tool");
+    }
+    window.history.pushState({}, "", url.toString());
+  };
 
   const categories = [
     "All",
@@ -227,17 +267,23 @@ export default function App() {
       <Navbar />
 
       <main className="flex-1">
-        {activeTool === "bus-tracker" ? (
-          <BusTrackerView onBack={() => setActiveTool(null)} />
-        ) : activeTool === "downloader" ? (
-          <UniversalDownloaderView onBack={() => setActiveTool(null)} />
-        ) : activeTool ? (
-          <MotionHubToolsView toolId={activeTool} onBack={() => setActiveTool(null)} />
-        ) : null}
+        {activeTool && (
+          <ToolErrorBoundary toolName={activeTool} onReset={() => handleSelectTool(null)}>
+            <Suspense fallback={<ToolLoadingSkeleton />}>
+              {activeTool === "bus-tracker" ? (
+                <BusTrackerView onBack={() => handleSelectTool(null)} />
+              ) : activeTool === "downloader" ? (
+                <UniversalDownloaderView onBack={() => handleSelectTool(null)} />
+              ) : (
+                <MotionHubToolsView toolId={activeTool} onBack={() => handleSelectTool(null)} />
+              )}
+            </Suspense>
+          </ToolErrorBoundary>
+        )}
 
         {!activeTool && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            {/* Hero Banner with Emerald Mint & Deep Obsidian Gradient */}
+            {/* Hero Banner */}
             <div className="relative rounded-3xl border border-emerald-500/20 bg-gradient-to-b from-emerald-950/20 via-slate-900/40 to-slate-950/80 p-8 sm:p-12 mb-12 text-center overflow-hidden backdrop-blur-xl shadow-2xl shadow-emerald-950/20">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
@@ -307,7 +353,7 @@ export default function App() {
                     category={tool.category}
                     status={tool.status}
                     badge={tool.badge}
-                    onClick={() => setActiveTool(tool.id)}
+                    onClick={() => handleSelectTool(tool.id)}
                   />
                 ))}
               </div>
