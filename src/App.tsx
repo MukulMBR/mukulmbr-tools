@@ -264,7 +264,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#07090e] text-slate-100 font-sans">
-      <Navbar />
+      <Navbar tools={toolsList} onSelectTool={handleSelectTool} />
 
       <main className="flex-1">
         {activeTool && (
