@@ -18,7 +18,8 @@ import {
   Check,
   Link as LinkIcon,
   Globe,
-  ExternalLink,
+  Bus,
+  Flag,
 } from "lucide-react";
 import { PrivacyBadge } from "../../components/shared/PrivacyBadge";
 
@@ -44,38 +45,14 @@ interface BusRoute {
   nextStop: string;
   waypoints: string[];
   trackingUrl?: string;
+  progressPercent: number;
 }
 
 export function BusTrackerView({ onBack }: { onBack: () => void }) {
-  const [trackingMode, setTrackingMode] = useState<"url" | "state">("url");
+  const [trackingMode, setTrackingMode] = useState<"url" | "state">("state");
   const [trackingUrlInput, setTrackingUrlInput] = useState<string>("https://s.yourbus.in/track?id=YB-88492");
-  const [selectedState, setSelectedState] = useState<string>("AP");
+  const [selectedState, setSelectedState] = useState<string>("TS");
   const [searchRegNumber, setSearchRegNumber] = useState<string>("");
-
-  const [activeBus, setActiveBus] = useState<BusRoute>({
-    id: "yb-88492",
-    code: "YOURBUS-88492",
-    regNumber: "AP07 Z 8849",
-    name: "Morning Star Travels — Scania Multi-Axle",
-    origin: "Vijayawada Auto Nagar",
-    destination: "Hyderabad Ameerpet",
-    speed: 68,
-    eta: "6 mins",
-    status: "Express",
-    lat: 16.5062,
-    lng: 80.648,
-    nextStop: "Vijayawada Benz Circle",
-    waypoints: ["Auto Nagar", "Benz Circle", "Suryapet Toll", "Ameerpet Hub"],
-    trackingUrl: "https://s.yourbus.in/track?id=YB-88492",
-  });
-
-  const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
-  const [telemetryLog, setTelemetryLog] = useState<string[]>([
-    "[INIT] Telemetry Radar Engine initialized via Live URL stream",
-  ]);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const leafletMapInstance = useRef<any>(null);
-  const busMarkerRef = useRef<any>(null);
 
   const stateRTCs: StateRTC[] = [
     { code: "AP", name: "Andhra Pradesh (APSRTC)", prefix: "AP07", cities: ["Vijayawada", "Visakhapatnam", "Tirupati", "Guntur"] },
@@ -83,7 +60,38 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
     { code: "KA", name: "Karnataka (KSRTC / BMTC)", prefix: "KA01", cities: ["Bengaluru", "Mysuru", "Mangaluru", "Hubballi"] },
     { code: "KL", name: "Kerala (KSRTC)", prefix: "KL15", cities: ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur"] },
     { code: "TN", name: "Tamil Nadu (TNSTC)", prefix: "TN01", cities: ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli"] },
+    { code: "MH", name: "Maharashtra (MSRTC Shivneri)", prefix: "MH12", cities: ["Mumbai", "Pune", "Nagpur", "Nashik"] },
+    { code: "UP", name: "Uttar Pradesh (UPSRTC)", prefix: "UP32", cities: ["Lucknow", "Kanpur", "Varanasi", "Agra"] },
+    { code: "GJ", name: "Gujarat (GSRTC)", prefix: "GJ01", cities: ["Ahmedabad", "Surat", "Vadodara", "Rajkot"] },
+    { code: "RJ", name: "Rajasthan (RSRTC)", prefix: "RJ14", cities: ["Jaipur", "Jodhpur", "Udaipur", "Kota"] },
+    { code: "DL", name: "Delhi (DTC / DIMTS)", prefix: "DL01", cities: ["Kashmere Gate", "Anand Vihar", "ISBT", "Connaught Place"] },
+    { code: "HP", name: "Himachal (HRTC)", prefix: "HP01", cities: ["Shimla", "Manali", "Dharamshala", "Mandi"] },
   ];
+
+  const [activeBus, setActiveBus] = useState<BusRoute>({
+    id: "ts-09-8382",
+    code: "TSRTC-8382",
+    regNumber: "TS09 Z 8382",
+    name: "Telangana State Super Express",
+    origin: "Hyderabad MGBS Terminal",
+    destination: "Warangal City Center",
+    speed: 58,
+    eta: "7 mins",
+    status: "On Time",
+    lat: 17.385,
+    lng: 78.4867,
+    nextStop: "Uppal Junction Stop",
+    waypoints: ["Hyderabad MGBS", "Uppal Junction", "Bhongir Bypass", "Warangal City Center"],
+    progressPercent: 55,
+  });
+
+  const [isLiveSyncing, setIsLiveSyncing] = useState<boolean>(true);
+  const [telemetryLog, setTelemetryLog] = useState<string[]>([
+    "[INIT] Telemetry Radar Engine initialized for TS09 Z 8382",
+  ]);
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const leafletMapInstance = useRef<any>(null);
+  const busMarkerRef = useRef<any>(null);
 
   // Submit URL Tracking Form
   const handleTrackByUrl = (e: React.FormEvent) => {
@@ -112,9 +120,9 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
       code: busCode,
       regNumber: busCode,
       name: `${provider} — Live Telemetry Vehicle`,
-      origin: "Origin Terminal",
-      destination: "Destination Station",
-      speed: Math.floor(50 + Math.random() * 30),
+      origin: "Origin Station",
+      destination: "Destination Hub",
+      speed: Math.floor(52 + Math.random() * 25),
       eta: `${Math.floor(4 + Math.random() * 10)} mins`,
       status: "Express",
       lat: 16.5062 + (Math.random() * 0.05 - 0.025),
@@ -122,6 +130,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
       nextStop: "En Route Checkpoint",
       waypoints: ["Boarding Point", "Highway Station", "City Bypass", "Destination Hub"],
       trackingUrl: url,
+      progressPercent: 62,
     };
 
     setActiveBus(newBus);
@@ -135,14 +144,27 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
   // Submit State Registration Number Search
   const handleSearchVehicle = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = searchRegNumber.trim() || `${selectedState}07 Z ${Math.floor(1000 + Math.random() * 9000)}`;
-
     const rtc = stateRTCs.find((s) => s.code === selectedState) || stateRTCs[0];
+    const query = searchRegNumber.trim() || `${rtc.prefix} Z ${Math.floor(1000 + Math.random() * 9000)}`;
+
     const cityA = rtc.cities[0];
     const cityB = rtc.cities[1] || rtc.cities[0];
 
-    const baseLat = selectedState === "AP" ? 16.5062 : selectedState === "TS" ? 17.385 : selectedState === "KA" ? 12.9716 : selectedState === "KL" ? 8.5241 : 13.0827;
-    const baseLng = selectedState === "AP" ? 80.648 : selectedState === "TS" ? 78.4867 : selectedState === "KA" ? 77.5946 : selectedState === "KL" ? 76.9366 : 80.2707;
+    const baseCoordinates: Record<string, [number, number]> = {
+      AP: [16.5062, 80.648],
+      TS: [17.385, 78.4867],
+      KA: [12.9716, 77.5946],
+      KL: [8.5241, 76.9366],
+      TN: [13.0827, 80.2707],
+      MH: [19.076, 72.8777],
+      UP: [26.8467, 80.9462],
+      GJ: [23.0225, 72.5714],
+      RJ: [26.9124, 75.7873],
+      DL: [28.6139, 77.209],
+      HP: [31.1048, 77.1734],
+    };
+
+    const [baseLat, baseLng] = baseCoordinates[selectedState] || [17.385, 78.4867];
 
     const newBus: BusRoute = {
       id: `bus-${Date.now()}`,
@@ -158,6 +180,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
       lng: baseLng + (Math.random() * 0.04 - 0.02),
       nextStop: `${cityA} Ring Road Circle`,
       waypoints: [`${cityA} Central`, `${cityA} Ring Road`, `Highway 44 Stop`, `${cityB} Terminal`],
+      progressPercent: Math.floor(40 + Math.random() * 45),
     };
 
     setActiveBus(newBus);
@@ -180,7 +203,7 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
     return () => clearInterval(interval);
   }, [isLiveSyncing, activeBus]);
 
-  // Leaflet Map Setup
+  // Leaflet Map Setup with Realistic Bus Icon & Popup Updates
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -200,15 +223,27 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
 
     function initMap() {
       if (!window.L || !mapContainerRef.current) return;
+      const L = window.L;
+
+      const busIconHtml = `<div style="background-color: #07090e; color: #10b981; border: 2px solid #10b981; border-radius: 12px; padding: 6px 10px; font-weight: bold; font-size: 13px; box-shadow: 0 0 20px rgba(16,185,129,0.6); display: flex; items-center: center; gap: 6px; white-space: nowrap;">🚍 <span style="font-size: 11px; color: #ffffff;">${activeBus.regNumber}</span></div>`;
+
+      const busIcon = L.divIcon({
+        className: "custom-bus-icon",
+        html: busIconHtml,
+        iconSize: [140, 36],
+        iconAnchor: [70, 18],
+      });
+
       if (leafletMapInstance.current) {
         leafletMapInstance.current.setView([activeBus.lat, activeBus.lng], 13);
         if (busMarkerRef.current) {
           busMarkerRef.current.setLatLng([activeBus.lat, activeBus.lng]);
+          busMarkerRef.current.setIcon(busIcon);
+          busMarkerRef.current.bindPopup(`<b>${activeBus.regNumber}</b><br/>${activeBus.name}<br/>Speed: ${activeBus.speed} km/h`).openPopup();
         }
         return;
       }
 
-      const L = window.L;
       const map = L.map(mapContainerRef.current, {
         center: [activeBus.lat, activeBus.lng],
         zoom: 13,
@@ -220,15 +255,8 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
         maxZoom: 19,
       }).addTo(map);
 
-      const busIcon = L.divIcon({
-        className: "custom-bus-icon",
-        html: `<div style="background-color: #10b981; width: 22px; height: 22px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 0 15px #10b981; animation: pulse 2s infinite;"></div>`,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-      });
-
       const marker = L.marker([activeBus.lat, activeBus.lng], { icon: busIcon }).addTo(map);
-      marker.bindPopup(`<b>${activeBus.regNumber}</b><br/>Speed: ${activeBus.speed} km/h`).openPopup();
+      marker.bindPopup(`<b>${activeBus.regNumber}</b><br/>${activeBus.name}<br/>Speed: ${activeBus.speed} km/h`).openPopup();
 
       leafletMapInstance.current = map;
       busMarkerRef.current = marker;
@@ -267,17 +295,6 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
         {/* Mode Switcher Tabs */}
         <div className="flex items-center gap-3 border-b border-white/10 pb-4">
           <button
-            onClick={() => setTrackingMode("url")}
-            className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
-              trackingMode === "url"
-                ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20"
-                : "bg-slate-950/60 text-slate-400 hover:text-white border border-white/5"
-            }`}
-          >
-            <LinkIcon className="h-4 w-4" /> Track via Live Bus Link / URL
-          </button>
-
-          <button
             onClick={() => setTrackingMode("state")}
             className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
               trackingMode === "state"
@@ -287,9 +304,60 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
           >
             <Building2 className="h-4 w-4" /> Track via State RTC & Plate Number
           </button>
+
+          <button
+            onClick={() => setTrackingMode("url")}
+            className={`flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl transition-all ${
+              trackingMode === "url"
+                ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20"
+                : "bg-slate-950/60 text-slate-400 hover:text-white border border-white/5"
+            }`}
+          >
+            <LinkIcon className="h-4 w-4" /> Track via Live Bus Link / URL
+          </button>
         </div>
 
-        {/* Mode 1: URL Tracking */}
+        {/* Mode 1: State RTC Registration Search */}
+        {trackingMode === "state" && (
+          <form onSubmit={handleSearchVehicle} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select State RTC (North & South India)</label>
+              <select
+                value={selectedState}
+                onChange={(e) => setSelectedState(e.target.value)}
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
+              >
+                {stateRTCs.map((s) => (
+                  <option key={s.code} value={s.code}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Vehicle Registration Number</label>
+              <input
+                type="text"
+                placeholder={`e.g. ${stateRTCs.find((s) => s.code === selectedState)?.prefix || "TS09"} Z 1234`}
+                value={searchRegNumber}
+                onChange={(e) => setSearchRegNumber(e.target.value)}
+                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                type="submit"
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+              >
+                <Search className="h-4 w-4" /> Locate Vehicle Radar
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Mode 2: URL Tracking */}
         {trackingMode === "url" && (
           <form onSubmit={handleTrackByUrl} className="space-y-4">
             <div>
@@ -317,53 +385,39 @@ export function BusTrackerView({ onBack }: { onBack: () => void }) {
                 </button>
               </div>
             </div>
-
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-white/5 flex items-center gap-2 text-[11px] text-slate-400">
-              <ShieldCheck className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-              <span>Supported Tracking Providers: YourBus, redBus Live, AbhiBus, APSRTC Live, TSRTC Gamanam.</span>
-            </div>
           </form>
         )}
+      </div>
 
-        {/* Mode 2: State RTC Registration Search */}
-        {trackingMode === "state" && (
-          <form onSubmit={handleSearchVehicle} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Select State RTC</label>
-              <select
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-400"
-              >
-                {stateRTCs.map((s) => (
-                  <option key={s.code} value={s.code}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+      {/* Route Progress Visualizer Bar */}
+      <div className="p-6 rounded-3xl border border-emerald-500/20 bg-slate-900/90 shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold text-white">
+            <Bus className="h-4 w-4 text-emerald-400" /> Interactive Route Map & Distance Progress
+          </div>
+          <span className="text-xs font-extrabold text-emerald-400">{activeBus.progressPercent}% Journey Completed</span>
+        </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Vehicle Registration Number</label>
-              <input
-                type="text"
-                placeholder={`e.g. ${stateRTCs.find((s) => s.code === selectedState)?.prefix || "AP07"} Z 1234`}
-                value={searchRegNumber}
-                onChange={(e) => setSearchRegNumber(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-400"
-              />
-            </div>
+        {/* Progress Bar */}
+        <div className="relative w-full h-3 rounded-full bg-slate-950 overflow-hidden border border-white/10">
+          <div
+            className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 transition-all duration-500"
+            style={{ width: `${activeBus.progressPercent}%` }}
+          />
+        </div>
 
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-              >
-                <Search className="h-4 w-4" /> Locate Vehicle Radar
-              </button>
-            </div>
-          </form>
-        )}
+        {/* Route Points */}
+        <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+          <span className="flex items-center gap-1.5 text-emerald-400">
+            <MapPin className="h-3.5 w-3.5" /> Start: {activeBus.origin}
+          </span>
+          <span className="flex items-center gap-1.5 text-amber-300">
+            <Bus className="h-3.5 w-3.5" /> Current: {activeBus.nextStop}
+          </span>
+          <span className="flex items-center gap-1.5 text-indigo-400">
+            <Flag className="h-3.5 w-3.5" /> Destination: {activeBus.destination}
+          </span>
+        </div>
       </div>
 
       {/* Main Radar Layout Grid */}
